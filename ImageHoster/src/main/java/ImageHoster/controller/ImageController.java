@@ -99,6 +99,15 @@ public class ImageController {
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
         return "images/edit";
+        //user who is trying to edit the image
+        //        if(image.getUser().getId()!=user.getId()) {
+        //            model.addAttribute("editError", error);
+        //            model.addAttribute("comments", comments);
+        //            return "images/image";
+        //        }
+        //        return "images/edit";
+        //    }
+        //
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
