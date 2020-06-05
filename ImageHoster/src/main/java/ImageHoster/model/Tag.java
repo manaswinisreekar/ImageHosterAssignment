@@ -1,7 +1,11 @@
 package ImageHoster.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+
 
 //@Entity annotation specifies that the corresponding class is a JPA entity
 @Entity
@@ -60,4 +64,6 @@ public class Tag {
     public void setImages(List<Image> images) {
         this.images = images;
     }
+
+
 }

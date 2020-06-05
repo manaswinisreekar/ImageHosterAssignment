@@ -1,5 +1,6 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
@@ -26,6 +27,8 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+    private Integer imageId;
+
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -45,11 +48,19 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{title}")
+  /*  @RequestMapping("/images/{title}")
     public String showImage(@PathVariable("title") String title, Model model) {
         Image image = imageService.getImageByTitle(title);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        return "images/image";
+    }*/
+    @RequestMapping("/images/{id}/{title}")
+   public String showImage(@PathVariable("id") Integer id, Model model) {
+        Image image = imageService.getImage(imageId);
+        model.addAttribute("image", image);
+        model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",image.getComments());
         return "images/image";
     }
 
@@ -91,23 +102,26 @@ public class ImageController {
 
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
-    @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
-        Image image = imageService.getImage(imageId);
 
+    @RequestMapping(value = "/editImage")
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model,HttpSession session) {
+        Image image = imageService.getImage(imageId);
+        User user = (User) session.getAttribute("loggeduser");
         String tags = convertTagsToString(image.getTags());
+        List<Comment> comments = image.getComments();
+        String error="Only the owner of the image can edit the image";
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
-        return "images/edit";
-        //user who is trying to edit the image
-        //        if(image.getUser().getId()!=user.getId()) {
-        //            model.addAttribute("editError", error);
-        //            model.addAttribute("comments", comments);
-        //            return "images/image";
-        //        }
-        //        return "images/edit";
-        //    }
+        model.addAttribute("comments", comments);
+        //Added the logic for checking if the user who is trying to edit is the same as the one who uploaded the image..
         //
+        // if not error out
+        if(image.getUser().getId()!=user.getId()) {
+            model.addAttribute("editError", error);
+            model.addAttribute("comments", comments);
+            return "images/image";
+        }
+        return "images/edit";
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -123,11 +137,9 @@ public class ImageController {
     //The method converts the string to a list of all the tags using findOrCreateTags() method and sets the tags attribute of an image as a list of all the tags
     @RequestMapping(value = "/editImage", method = RequestMethod.PUT)
     public String editImageSubmit(@RequestParam("file") MultipartFile file, @RequestParam("imageId") Integer imageId, @RequestParam("tags") String tags, Image updatedImage, HttpSession session) throws IOException {
-
-        Image image = imageService.getImage(imageId);
+    Image image = imageService.getImage(imageId);
         String updatedImageData = convertUploadedFileToBase64(file);
         List<Tag> imageTags = findOrCreateTags(tags);
-
         if (updatedImageData.isEmpty())
             updatedImage.setImageFile(image.getImageFile());
         else {
@@ -197,3 +209,6 @@ public class ImageController {
         return tagString.toString();
     }
 }
+//Error:(61, 35) java: cannot find symbol
+//  symbol:   method getImageById(java.lang.Integer)
+//  location: variable imageService of type ImageHoster.service.ImageService
